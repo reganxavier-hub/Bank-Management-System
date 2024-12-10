@@ -1,109 +1,181 @@
 /* Bank Management System
 * Author: Regan
 * Date: 10-12-2024
-* Description: Simple Bank Management System in C
+* Description: Bank Management System in C
 * This program simulates a basic bank management system where users can:
 * 1. Create new bank accounts
 * 2. View details of all accounts
 * Future enhancements could include deposit, withdrawal, and file storage functionality. */
 
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
 
-// Define the maximum number of accounts that can be stored
-#define MAX_ACCOUNTS 100
-
-// Structure to store bank account details
-typedef struct bank_account 
-{
-    int ac_number; // Account number
-    char holder_name[50]; // Name of the account holder
-    double balance; // Account balance
+// Structure for bank account details
+typedef struct bank_account {
+    long long account_number; // Use long long for a 10-digit number
+    char name[50];
+    char branch_name[50];
+    char state[50];
+    double balance;
 } bank_account;
 
 // Function prototypes
-void create_account(bank_account * account, int * account_count); // Function to create a new account
-void display_all_accounts(bank_account * account, int account_count); // Function to display all accounts
+void create_account(bank_account *accounts, int *account_count);
+void display_account(bank_account *accounts, int account_count);
+void deposit(bank_account *accounts, int account_count);
+void withdraw(bank_account *accounts, int account_count);
+int prompt_return_to_menu();
 
-// Function to create a new bank account
-void create_account(bank_account * account, int * account_count) 
-{
-    // Check if the maximum account limit has been reached
-    if ( * account_count >= MAX_ACCOUNTS) {
-        printf("Maximum account limit reached. Upgrade your account limit!\n");
-        return;
-    }
-
-    printf("\n---Create New Account---\n");
-
-    // Input account details
-    printf("Enter new account number: ");
-    scanf("%d", & account[ * account_count].ac_number);
-    printf("Enter the name: ");
-    scanf("%s", account[ * account_count].holder_name);
-    printf("Enter initial deposit (in Rs): ");
-    scanf("%lf", & account[ * account_count].balance);
-
-    ( * account_count) ++; // Increment the account count
-    printf("\nAccount created successfully!\n");
-}
-
-// Function to display all bank accounts
-void display_all_accounts(bank_account * account, int account_count) 
-{
-    // Check if there are no accounts
-    if (account_count == 0) 
-    {
-        printf("No accounts found!\n");
-        return;
-    }
-
-    printf("\n---Account Details---\n");
-
-    // Loop through all accounts and display their details
-    for (int i = 0; i < account_count; i++) 
-    {
-        printf("Account number: %d\n", account[i].ac_number);
-        printf("Account holder name: %s\n", account[i].holder_name);
-        printf("Balance: Rs. %.2lf\n", account[i].balance);
-        printf("-------------------------\n");
-    }
-}
+#define MAX_ACCOUNTS 100
 
 int main() {
-    printf("Welcome to Bank Management System\n");
+    bank_account accounts[MAX_ACCOUNTS];
+    int account_count = 0;
+    int choice;
 
-    int choice = 0; // Variable to store menu choice
-    int account_count = 0; // Keeps track of the number of accounts created
-    bank_account accounts[MAX_ACCOUNTS]; // Array to store bank accounts
+    srand(time(NULL)); // Seed random number generator
 
-    while (1) 
-    {
-        // Display the main menu
-        printf("\n---Main Menu---\n");
-        printf("1. Create a new Account\n");
-        printf("2. Deposit Money (Coming Soon)\n");
-        printf("3. Withdraw Money (Coming Soon)\n");
-        printf("4. Display all Accounts\n");
+    printf("Welcome to Indian Bank Management System\n");
+
+    while (1) {
+        printf("\n--- Main Menu ---\n");
+        printf("1. Create New Account\n");
+        printf("2. Display All Accounts\n");
+        printf("3. Deposit Money\n");
+        printf("4. Withdraw Money\n");
         printf("5. Exit\n");
+        printf("------------------\n");
         printf("\nEnter your choice: ");
-        scanf("%d", & choice);
+        scanf("%d", &choice);
 
-        // Handle menu options
-        switch (choice) 
-        {
-        case 1:
-            create_account(accounts, & account_count); // Create a new account
+        switch (choice) {
+            case 1:
+                create_account(accounts, &account_count);
+                break;
+            case 2:
+                display_account(accounts, account_count);
+                break;
+            case 3:
+                deposit(accounts, account_count);
+                break;
+            case 4:
+                withdraw(accounts, account_count);
+                break;
+            case 5:
+                printf("\nThank you for banking with us!\n");
+                return 0;
+            default:
+                printf("Invalid choice. Please try again.\n");
+        }
+
+        // Ask if the user wants to return to the main menu
+        if (!prompt_return_to_menu()) {
+            printf("\nThank you for banking with us!\n");
             break;
-        case 4:
-            display_all_accounts(accounts, account_count); // Display all accounts
-            break;
-        case 5:
-            printf("Exiting the program. Thank you!\n");
-            return 0; // Exit the program
-        default:
-            printf("Invalid choice. Please try again!\n");
         }
     }
-
     return 0;
+}
+
+// Function to create a new account
+void create_account(bank_account *accounts, int *account_count) {
+    if (*account_count >= MAX_ACCOUNTS) {
+        printf("Maximum account limit reached. Cannot create more accounts.\n");
+        return;
+    }
+
+    printf("\n--- Create Account ---\n");
+
+    // Generate a random 10-digit account number
+    accounts[*account_count].account_number = (rand() % 9000000000) + 1000000000;
+
+    printf("Generated Account Number: %lld\n", accounts[*account_count].account_number);
+    printf("Enter Name: ");
+    scanf(" %[^\n]", accounts[*account_count].name); // Read full name with spaces
+    printf("Enter Branch Name: ");
+    scanf(" %[^\n]", accounts[*account_count].branch_name); // Read branch name with spaces
+    printf("Enter State: ");
+    scanf(" %[^\n]", accounts[*account_count].state); // Read state with spaces
+    printf("Enter Initial Deposit: Rs.");
+    scanf("%lf", &accounts[*account_count].balance);
+
+    (*account_count)++;
+    printf("Account created successfully!\n");
+}
+
+// Function to display all accounts in a table format
+void display_account(bank_account *accounts, int account_count) {
+    if (account_count == 0) {
+        printf("No accounts available!\n");
+        return;
+    }
+
+    printf("\n--- Account Details ---\n");
+
+    // Print the table header
+    printf("----------------------------------------------------------------------------------------\n");
+    printf("| %-12s | %-15s | %-20s | %-15s | %-10s |\n", 
+           "Account No", "Name", "Branch", "State", "Balance");
+    printf("----------------------------------------------------------------------------------------\n");
+
+    // Print each account's details
+    for (int i = 0; i < account_count; i++) {
+        printf("| %-12lld | %-15s | %-20s | %-15s | %-10.2f |\n",
+               accounts[i].account_number, accounts[i].name, 
+               accounts[i].branch_name, accounts[i].state, 
+               accounts[i].balance);
+    }
+    printf("----------------------------------------------------------------------------------------\n");
+}
+
+// Function to deposit money into an account
+void deposit(bank_account *accounts, int account_count) {
+    long long account_number;
+    double amount;
+    printf("\nEnter Account Number: ");
+    scanf("%lld", &account_number);
+
+    for (int i = 0; i < account_count; i++) {
+        if (accounts[i].account_number == account_number) {
+            printf("Enter Amount to Deposit: ");
+            scanf("%lf", &amount);
+            accounts[i].balance += amount;
+            printf("Deposit successful! \n\nUpdated Balance: Rs.%.2f\n", accounts[i].balance);
+            return;
+        }
+    }
+    printf("Account not found.\n");
+}
+
+// Function to withdraw money from an account
+void withdraw(bank_account *accounts, int account_count) {
+    long long account_number;
+    double amount;
+    printf("\nEnter Account Number: ");
+    scanf("%lld", &account_number);
+
+    for (int i = 0; i < account_count; i++) {
+        if (accounts[i].account_number == account_number) {
+            printf("Enter Amount to Withdraw: ");
+            scanf("%lf", &amount);
+            if (amount > accounts[i].balance) {
+                printf("Insufficient balance.\n");
+            } else {
+                accounts[i].balance -= amount;
+                printf("Withdrawal successful! Updated Balance: Rs.%.2f\n", accounts[i].balance);
+            }
+            return;
+        }
+    }
+    printf("Account not found.\n");
+}
+
+// Function to prompt user to return to the main menu
+int prompt_return_to_menu() {
+    char choice;
+    printf("\nReturn to Main Menu? (Y/N): ");
+    scanf(" %c", &choice);
+    return (choice == 'Y' || choice == 'y');
 }
